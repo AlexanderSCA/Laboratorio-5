@@ -17,7 +17,6 @@ def funcion_T(x,a,b):
 #Asumiendo que ya están definidos Vpp_ch1, Vpp, y frecuencias
 
 T = np.array(Vpp)/np.array(Vpp_ch1)
-G = 20*np.log10(T)
 
 init_value = [4,0]
 popt, pcov = curve_fit(funcion_T, frecuencias, T, p0=init_value)
@@ -27,3 +26,14 @@ fc, err_fc, b0, err_b0 = popt[0], perr[0], popt[1], perr[1]
 
 print("fc ="+ str(round(fc,2)) + "±" + str(round(err_fc,2)))
 print("b0 =" + str(round(b0,2)) + "±" + str(round(err_b0,2)))
+
+#%% Graficos
+
+plt.figure(figsize=(6,6))
+plt.plot(frecuencias, T,'o', label = "T($f$)")
+plt.plot(frecuencias, funcion_T(frecuencias, fc,b0), 'k-', label='Ajuste')
+plt.xlabel('Frecuencias [Hz]')
+plt.ylabel('Transferencia')
+plt.legend(loc=0, fontsize=12)
+plt.grid(True, linestyle="--")
+plt.tight_layout()
