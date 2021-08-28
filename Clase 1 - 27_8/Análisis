@@ -1,0 +1,29 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Aug 27 21:55:34 2021
+
+@author: Alexander
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+def funcion_T(x,a,b):
+    H = 1/(1+(x/a)**2)+b
+    return H
+
+#%% Ajuste no lineal con la función función_T
+#Asumiendo que ya están definidos Vpp_ch1, Vpp, y frecuencias
+
+T = np.array(Vpp)/np.array(Vpp_ch1)
+G = 20*np.log10(T)
+
+init_value = [4,0]
+popt, pcov = curve_fit(funcion_T, frecuencias, T, p0=init_value)
+perr = np.sqrt(np.diag(pcov)) 
+
+fc, err_fc, b0, err_b0 = popt[0], perr[0], popt[1], perr[1]
+
+print("fc ="+ str(round(fc,2)) + "±" + str(round(err_fc,2)))
+print("b0 =" + str(round(b0,2)) + "±" + str(round(err_b0,2)))
