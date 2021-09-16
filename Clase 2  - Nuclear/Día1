@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Sep 10 11:13:42 2021
+
+@author: Publico
+"""
+
+from instrumental import AFG3021B, TDS1002B
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
+import sys
+import time
+import visa
+
+#%%
+# =============================================================================
+# CONEXIÓN CON INSTRUMENTOS
+# =============================================================================
+
+# Me conecto con el osciloscopio
+
+rm = visa.ResourceManager()
+
+instrumentos = rm.list_resources()
+
+osc = TDS1002B(instrumentos[0])
+
+# Del osciloscopio, elijo el channel 1 y la escala vertical (500mV)
+channel=1
+scale = 500e-3
+osc.set_channel(channel,scale)
+
+#%% 
+# =============================================================================
+# TOMA DE DATOS - N PANTALLAS
+# =============================================================================
+elemento = "Bi"  #muestra
+N = 20 #cantidad de capturas
+
+datos = np.zeros((N,2500))
+tiempos = np.zeros((N,2500))
+
+for jj in range(N):
+    time.sleep(0.1)
+    osc.get_time()
+    tiempos[jj], datos[jj] = osc.read_data(channel)
+    sys.stdout.write("/r jj" %jj)
+    sys.stdout.flush()
+
+#%%
+# =============================================================================
+# ANÁLISIS DE DATOS - UNA PANTALLA
+# =============================================================================
+umbral = 0
+
+Picos = []
+Tiempos_picos = []
+
+if N == 1:
+    pos = find_peaks(datos, umbral)
+    Picos = Picos[1]["peak_heights"]
+    Tiempos_picos = tiempos[Picos[0]]
+else:
+    for ii in range(N):
+        pos = find_peaks(datos[ii], umbral)
+        for vv, w in zip(pos[0], pos[1]["peak_heights"]):
+            Picos.append(w)    
+            Tiempos_picos.append(tiempos[vv])
+
+#%% Grafico todo y destaco los picos # 1 Captura
+#### Funciona para imprimir pantalla por vez!
+
+plt.figure(1, figsize=(7,7))
+# plt.clf()
+plt.plot(tiempos, datos, label = 'Señal detectada')
+plt.xlabel('Tiempo [s]')
+plt.ylabel('Voltaje [V]')
+plt.show()
+
+#Agrego 'o' a los picos para ver si los está tomando bien
+plt.plot(Tiempos_picos, Picos,'o',color='r', label = 'Picos')
+plt.plot(tiempos, np.full(len(tiempos), umbral), 'k-', label = 'Umbral')
+
+plt.legend(loc=0)
+plt.title('Detección de radiación gamma para el '+ elemento +'- '+ str(N) +'pantalla')
+            
+#%% Grafico el histograma para N capturas
+
+plt.figure(2, figsize=(7,7))
+plt.clf()
+plt.hist(Picos)
+plt.ylabel('Cantidad')
+plt.xlabel('[V]')
+plt.show()
+plt.suptitle('Detección de radiación gamma fuera del fuerte de acero para el '+ elemento)
+plt.title(str(N)+' pantallas')
+
+
+
