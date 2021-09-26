@@ -20,5 +20,5 @@ def buscar_archivos(ruta):
 archivo_texto = buscar_archivos(ruta_carpetas)
 
 for i in range(len(archivo_texto)):
-    globals()[archivo_texto[i][:-4]] = np.loadtxt(ruta_carpetas + "/" + archivo_texto[i],skiprows=4, unpack=True,)
+    globals()[archivo_texto[i][:-4]] = np.loadtxt(ruta_carpetas + "/" + archivo_texto[i], unpack=True,)
     
